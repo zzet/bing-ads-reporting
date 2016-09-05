@@ -46,23 +46,17 @@ module BingAdsReporting
     private
 
     def header(settings)
+      base_header = {
+        ns('ApplicationToken') => settings[:application_token],
+        ns('CustomerAccountId') => settings[:account_id],
+        ns('CustomerId') => settings[:customer_id],
+        ns('DeveloperToken') => settings[:developer_token]
+      }
+
       if settings[:username] && settings[:password]
-        {
-          ns('ApplicationToken') => settings[:application_token],
-          ns('CustomerAccountId') => settings[:account_id],
-          ns('CustomerId') => settings[:customer_id],
-          ns('DeveloperToken') => settings[:developer_token],
-          ns('UserName') => settings[:username],
-          ns('Password') => settings[:password]
-        }
+        base_header.merge({ ns('UserName') => settings[:username], ns('Password') => settings[:password] })
       else
-        {
-          ns('ApplicationToken') => settings[:application_token],
-          ns('CustomerAccountId') => settings[:account_id],
-          ns('CustomerId') => settings[:customer_id],
-          ns('DeveloperToken') => settings[:developer_token],
-          ns('AuthenticationToken') => settings[:authentication_token]
-        }
+        base_header.merge({ ns('AuthenticationToken') => settings[:authentication_token] })
       end
     end
 
