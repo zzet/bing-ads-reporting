@@ -1,5 +1,6 @@
 module BingAdsReporting
   class Client
+    include Formatter
     API_CALL_RETRY_COUNT = 3
 
     def initialize(settings, logger)
@@ -32,13 +33,13 @@ module BingAdsReporting
     end
 
     def call(service, message, retry_count = API_CALL_RETRY_COUNT)
-      1.upto(retry_count) do |retry_index|
+      1.upto(retry_count + 1) do |retry_index|
         begin
           response = @soap_client.call(service, message: message)
-          return response
+          break response
         rescue Savon::SOAPFault => error
           next if retry_index <= retry_count
-          handle_soap_fault(error)
+          break handle_soap_fault(error)
         end
       end
     end
@@ -65,9 +66,8 @@ module BingAdsReporting
         raise TokenExpired, msg
       end
       @logger.error error.http.code
-      @logger.error error.message
       @logger.error msg
-      raise ClientDataError, "HTTP error code: #{error.http.code}\n#{error.message}"
+      raise ClientDataError, "HTTP error code: #{error.http.code}\n#{msg}"
     end
   end
 end

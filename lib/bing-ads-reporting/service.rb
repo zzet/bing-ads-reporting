@@ -1,5 +1,7 @@
 module BingAdsReporting
   class Service
+    include Formatter
+
     def initialize(settings, logger = Logger.new($stdout))
       @account_id = settings[:account_id]
       @client = Client.new(settings, logger)
@@ -94,10 +96,6 @@ module BingAdsReporting
             }
           }
         })
-      end
-
-      def ns(str)
-        "tns:#{str}"
       end
   end
 end
