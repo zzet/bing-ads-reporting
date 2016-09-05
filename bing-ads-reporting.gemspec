@@ -10,6 +10,8 @@ Gem::Specification.new do |gem|
   gem.homepage      = 'https://github.com/forward3d/bing-ads-reporting'
 
   gem.files         = [ 'lib/bing-ads-reporting.rb',
+                        'lib/bing-ads-reporting/client.rb',
+                        'lib/bing-ads-reporting/formatter.rb',
                         'lib/bing-ads-reporting/service.rb',
                         'lib/bing-ads-reporting/version.rb']
 

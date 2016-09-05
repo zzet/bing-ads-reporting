@@ -53,11 +53,19 @@ module BingAdsReporting
         ns('DeveloperToken') => settings[:developer_token]
       }
 
+      append_authentication_params(base_header, settings)
+    end
+
+    def append_authentication_params(header, settings)
       if settings[:username] && settings[:password]
-        base_header.merge({ ns('UserName') => settings[:username], ns('Password') => settings[:password] })
+        header[ns('UserName')] = settings[:username]
+        header[ns('Password')] = settings[:password]
+      elsif settings[:authentication_token]
+        header[ns('AuthenticationToken')] = settings[:authentication_token]
       else
-        base_header.merge({ ns('AuthenticationToken') => settings[:authentication_token] })
+        raise AuthenticationParamsMissing, 'no username/password combination or authentication token specified'
       end
+      header
     end
 
     def handle_soap_fault(error)
