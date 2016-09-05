@@ -8,4 +8,5 @@ require_relative 'bing-ads-reporting/version'
 module BingAdsReporting
   class TokenExpired < RuntimeError; end
   class ClientDataError < RuntimeError; end
+  class DownloadError < RuntimeError; end
 end

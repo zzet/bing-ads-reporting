@@ -4,30 +4,14 @@ module BingAdsReporting
     API_CALL_RETRY_COUNT = 3
 
     def initialize(settings, logger)
-      if settings[:username] && settings[:password]
-        header = {
-          ns('ApplicationToken') => settings[:application_token],
-          ns('CustomerAccountId') => settings[:account_id],
-          ns('CustomerId') => settings[:customer_id],
-          ns('DeveloperToken') => settings[:developer_token],
-          ns('UserName') => settings[:username],
-          ns('Password') => settings[:password]
-        }
-      else
-        header = {
-          ns('ApplicationToken') => settings[:application_token],
-          ns('CustomerAccountId') => settings[:account_id],
-          ns('CustomerId') => settings[:customer_id],
-          ns('DeveloperToken') => settings[:developer_token],
-          ns('AuthenticationToken') => settings[:authentication_token]
-        }
-      end
+      soap_header = header(settings)
+      log_level = settings[:log_level] || :info
       @logger = logger
       @soap_client = Savon.client({
         wsdl: "https://api.bingads.microsoft.com/Api/Advertiser/Reporting/V9/ReportingService.svc?wsdl",
         namespaces: {"xmlns:arr" => 'http://schemas.microsoft.com/2003/10/Serialization/Arrays'},
-        soap_header: header,
-        log_level: settings[:log_level] || :info,
+        soap_header: soap_header,
+        log_level: log_level,
         pretty_print_xml: true
       })
     end
@@ -44,14 +28,43 @@ module BingAdsReporting
       end
     end
 
-    def download(url)
-      @logger.info "Downloading Bing material from: #{url}"
-      curl = Curl::Easy.new(url)
-      curl.perform
-      curl.body_str
+    def download(url, retry_count = API_CALL_RETRY_COUNT)
+      1.upto(retry_count + 1) do |retry_index|
+        begin
+          @logger.info "Downloading Bing material from: #{url}"
+          curl = Curl::Easy.new(url)
+          curl.perform
+          body = curl.body_str
+          break body
+        rescue => ex
+          next if retry_index <= retry_count
+          raise DownloadError, ex.message
+        end
+      end
     end
 
     private
+
+    def header(settings)
+      if settings[:username] && settings[:password]
+        {
+          ns('ApplicationToken') => settings[:application_token],
+          ns('CustomerAccountId') => settings[:account_id],
+          ns('CustomerId') => settings[:customer_id],
+          ns('DeveloperToken') => settings[:developer_token],
+          ns('UserName') => settings[:username],
+          ns('Password') => settings[:password]
+        }
+      else
+        {
+          ns('ApplicationToken') => settings[:application_token],
+          ns('CustomerAccountId') => settings[:account_id],
+          ns('CustomerId') => settings[:customer_id],
+          ns('DeveloperToken') => settings[:developer_token],
+          ns('AuthenticationToken') => settings[:authentication_token]
+        }
+      end
+    end
 
     def handle_soap_fault(error)
       msg = 'unexpected error'
