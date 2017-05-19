@@ -1,3 +1,4 @@
+require 'pry'
 module BingAdsReporting
   class Client
     include Formatter
@@ -19,6 +20,7 @@ module BingAdsReporting
     def call(service, message, retry_count = API_CALL_RETRY_COUNT)
       1.upto(retry_count + 1) do |retry_index|
         begin
+          binding.pry
           response = @soap_client.call(service, message: message)
           break response
         rescue Savon::SOAPFault => error

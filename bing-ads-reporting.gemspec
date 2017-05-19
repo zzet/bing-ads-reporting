@@ -23,5 +23,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'savon'
   gem.add_dependency 'curb'
 
+  gem.add_development_dependency 'pry', '~> 0.10', '>= 0.10.4'
+
   gem.license = 'MIT'
 end
